@@ -1,7 +1,7 @@
+// Assets/SM/Scripts/Net/GameFlowManager.cs
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace SM.Net
 {
@@ -16,20 +16,22 @@ namespace SM.Net
         [SerializeField] private string mainMenuScene = "MainMenu";
 
         [Header("Runtime")]
-        [SyncVar] private int _timeLeft;
+        private readonly SyncVar<int> _timeLeft = new SyncVar<int>(); // new SyncVar<T> style
         private StartZone _startZone;
 
         public override void OnStartServer()
         {
             base.OnStartServer();
-            // take matchSeconds from SessionData if present
+
+            // Take matchSeconds from SessionData if present
             matchSeconds = Mathf.Max(1, SM.Net.SessionData.MatchSeconds);
-            _timeLeft = matchSeconds;
-            _timeLeft = matchSeconds;
-            Debug.Log($"[GameFlowManager] Server match start {_timeLeft}s.");
+
+            _timeLeft.Value = matchSeconds;
+            Debug.Log($"[GameFlowManager] Server match start {_timeLeft.Value}s.");
             InvokeRepeating(nameof(ServerTickSecond), 1f, 1f);
 
-            _startZone = FindObjectOfType<StartZone>();
+            // Use new API instead of deprecated FindObjectOfType
+            _startZone = UnityEngine.Object.FindFirstObjectByType<StartZone>();
             if (_startZone == null) Debug.LogError("[GameFlowManager] No StartZone in scene!");
         }
 
@@ -41,8 +43,8 @@ namespace SM.Net
 
         private void ServerTickSecond()
         {
-            _timeLeft = Mathf.Max(0, _timeLeft - 1);
-            if (_timeLeft == 0)
+            _timeLeft.Value = Mathf.Max(0, _timeLeft.Value - 1);
+            if (_timeLeft.Value == 0)
             {
                 Debug.Log("[GameFlowManager] Match ended (timer 0).");
                 RpcReturnToMenu();
@@ -54,7 +56,8 @@ namespace SM.Net
         private void RpcReturnToMenu()
         {
             Debug.Log("[GameFlowManager] RPC → Load MainMenu (clients).");
-            SceneManager.LoadScene(mainMenuScene);
+            // Fully qualify to avoid conflict with FishNet's SceneManager type
+            UnityEngine.SceneManagement.SceneManager.LoadScene(mainMenuScene);
         }
 
         private void ServerShutdownToMenu()
@@ -62,10 +65,10 @@ namespace SM.Net
             Debug.Log("[GameFlowManager] Server stopping and loading menu locally.");
             base.NetworkManager.ServerManager.StopConnection(false);
             base.NetworkManager.ClientManager.StopConnection();
-            SceneManager.LoadScene(mainMenuScene);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(mainMenuScene);
         }
 
-        public int GetTimeLeft() => _timeLeft;
+        public int GetTimeLeft() => _timeLeft.Value;
         public float KillY => killY;
 
         [ServerRpc(RequireOwnership = false)]

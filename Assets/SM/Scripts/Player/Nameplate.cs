@@ -1,3 +1,4 @@
+// Assets/SM/Scripts/Player/Nameplate.cs
 using UnityEngine;
 using TMPro;
 
@@ -16,7 +17,10 @@ namespace SM.Player
         private void Start()
         {
             if (identity != null && text != null)
-                text.text = string.IsNullOrEmpty(identity.PlayerName) ? "Player" : identity.PlayerName;
+            {
+                var n = identity.PlayerName.Value;
+                text.text = string.IsNullOrEmpty(n) ? "Player" : n;
+            }
             Debug.Log("[Nameplate] Init.");
         }
 
@@ -25,8 +29,12 @@ namespace SM.Player
             if (Camera.main == null || follow == null) return;
             transform.position = follow.position + Vector3.up * height;
             transform.forward = Camera.main.transform.forward;
-            if (identity != null && text != null && !string.IsNullOrEmpty(identity.PlayerName))
-                text.text = identity.PlayerName;
+
+            if (identity != null && text != null)
+            {
+                var n = identity.PlayerName.Value;
+                if (!string.IsNullOrEmpty(n)) text.text = n;
+            }
         }
     }
 }

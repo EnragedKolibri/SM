@@ -1,3 +1,4 @@
+// Assets/SM/Scripts/Net/NetTuning.cs
 using UnityEngine;
 using FishNet.Managing;
 
@@ -20,7 +21,7 @@ namespace SM.Net
             Debug.Log($"[NetTuning] tick={tickRate} send={sendRate} interp={interpMs}ms");
 
             if (fishNet != null)
-                fishNet.TimeManager.SetTickRate(tickRate);
+                fishNet.TimeManager.SetTickRate((ushort)Mathf.Clamp(tickRate, 1, 1024)); // cast to ushort for new API
         }
     }
 }

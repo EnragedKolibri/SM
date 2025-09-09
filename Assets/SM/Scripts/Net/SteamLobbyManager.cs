@@ -1,7 +1,8 @@
+// Assets/SM/Scripts/Net/SteamLobbyManager.cs
 using UnityEngine;
 using Steamworks;
 using FishNet.Managing;
-using FishNet.Transporting; // for Transport base
+using FishNet.Transporting;
 using System;
 
 namespace SM.Net
@@ -14,13 +15,12 @@ namespace SM.Net
         [Header("Refs")]
         [SerializeField] private NetworkManager networkManager; // assign in Boot scene
 
-        // We'll fetch the concrete FishySteamworks transport from NetworkManager at runtime.
+        // Fetched from NetworkManager at runtime.
         private FishySteamworks.FishySteamworks _fishy;
 
         [Header("State (read-only)")]
         [SerializeField] private ulong currentLobbyId;
 
-        // Lobby metadata keys
         private const string KEY_HOST = "host_steamid";
         private const string KEY_STATE = "state";   // lobby | in_game
         private const string KEY_MAP = "map";
@@ -42,18 +42,16 @@ namespace SM.Net
 
         private void Awake()
         {
-            // Register Steam callbacks
             _cbCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
             _cbEntered = Callback<LobbyEnter_t>.Create(OnLobbyEnteredCb);
             _cbJoinReq = Callback<GameLobbyJoinRequested_t>.Create(OnJoinRequested);
             Debug.Log("[SteamLobbyManager] Callbacks registered.");
 
-            // Cache the FishySteamworks transport from NetworkManager
             if (networkManager != null)
             {
                 _fishy = networkManager.TransportManager.Transport as FishySteamworks.FishySteamworks;
                 if (_fishy == null)
-                    Debug.LogError("[SteamLobbyManager] Transport on NetworkManager is not FishySteamworks. Set FishySteamworks on TransportManager.");
+                    Debug.LogError("[SteamLobbyManager] Transport on NetworkManager is not FishySteamworks.");
                 else
                     Debug.Log("[SteamLobbyManager] FishySteamworks transport found.");
             }
@@ -104,7 +102,6 @@ namespace SM.Net
 
             Debug.Log($"[SteamLobbyManager] Lobby created {currentLobbyId}, host={me.m_SteamID}");
 
-            // Start listen host networking.
             networkManager.ServerManager.StartConnection();
             networkManager.ClientManager.StartConnection();
         }
@@ -117,20 +114,17 @@ namespace SM.Net
 
             if (_hosting) return;
 
-            // Joiner path: look up host SteamID and connect via FishySteamworks.
+            // Joiner path
             var lobby = new CSteamID(currentLobbyId);
             string hostIdStr = SteamMatchmaking.GetLobbyData(lobby, KEY_HOST);
             if (ulong.TryParse(hostIdStr, out ulong hostId))
             {
                 if (_fishy == null)
-                {
-                    // Try caching again in case NetworkManager was assigned later.
                     _fishy = networkManager.TransportManager.Transport as FishySteamworks.FishySteamworks;
-                }
 
                 if (_fishy != null)
                 {
-                    _fishy.SetClientAddress(hostId);
+                    _fishy.SetClientAddress(hostIdStr); // expects string in your version
                     Debug.Log($"[SteamLobbyManager] Connecting to host {hostId} via FishySteamworks…");
                 }
                 else

@@ -17,7 +17,6 @@ namespace SM.Net
         [SerializeField] private SteamLobbyManager steamLobbyManager;
         [SerializeField] private NetworkManager fishNet;
         [SerializeField] private string mainMenuScene = "MainMenu";
-        [SerializeField] private int defaultMatchSeconds = 180;
 
         private ScrollView _list;
         private Button _readyBtn;

@@ -1,9 +1,10 @@
+// Assets/SM/Scripts/Net/PingService.cs
 using System.Collections.Generic;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using UnityEngine;
 using Steamworks;
-using FishNet.Connection; // <- needed for NetworkConnection
+using FishNet.Connection; // for NetworkConnection
 
 namespace SM.Net
 {
@@ -23,7 +24,8 @@ namespace SM.Net
 
         private void Update()
         {
-            if (!IsClient) return;
+            // Use new flag instead of obsolete IsClient
+            if (!IsClientInitialized) return;
 
             if (Time.time >= _nextPing)
             {
@@ -47,17 +49,16 @@ namespace SM.Net
         [ServerRpc(RequireOwnership = false)]
         private void PingServerRpc(int cid, double sentClientTime, string name, ulong sid)
         {
-            // Look up the NetworkConnection for that clientId.
+            // Look up that client's connection and bounce the ping.
             if (!base.NetworkManager.ServerManager.Clients.TryGetValue(cid, out NetworkConnection conn))
             {
                 Debug.LogWarning($"[PingService] No connection for cid={cid}");
                 return;
             }
 
-            // Bounce back to that specific client so it can compute RTT.
             PongTargetRpc(conn, cid, sentClientTime);
 
-            // Store display info for scoreboard.
+            // Track info for scoreboard.
             _names[cid] = name;
             _steamIds[cid] = sid;
         }

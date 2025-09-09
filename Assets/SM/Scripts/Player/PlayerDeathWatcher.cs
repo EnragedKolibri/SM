@@ -1,3 +1,4 @@
+// Assets/SM/Scripts/Player/PlayerDeathWatcher.cs
 using UnityEngine;
 using FishNet.Object;
 using UnityEngine.UIElements;
@@ -17,10 +18,12 @@ namespace SM.Player
 
         private void Start()
         {
-            _flow = FindObjectOfType<SM.Net.GameFlowManager>();
+            // New API (no obsolete warning)
+            _flow = UnityEngine.Object.FindFirstObjectByType<SM.Net.GameFlowManager>();
+
             var root = uiDocument.rootVisualElement;
             _panel = new VisualElement();
-            _panel.style.backgroundColor = new Color(0,0,0,0.6f);
+            _panel.style.backgroundColor = new Color(0, 0, 0, 0.6f);
             _panel.style.position = Position.Absolute;
             _panel.style.left = 0; _panel.style.right = 0; _panel.style.top = 0; _panel.style.bottom = 0;
             _panel.style.display = DisplayStyle.None;
@@ -58,7 +61,7 @@ namespace SM.Player
                     _respawnAt = -1f;
                     _panel.style.display = DisplayStyle.None;
                     var no = GetComponent<NetworkObject>();
-                    FindObjectOfType<SM.Net.GameFlowManager>().RequestRespawnServerRpc(no);
+                    UnityEngine.Object.FindFirstObjectByType<SM.Net.GameFlowManager>()?.RequestRespawnServerRpc(no);
                 }
             }
         }

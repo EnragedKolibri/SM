@@ -1,3 +1,4 @@
+// Assets/SM/Scripts/Net/LobbyNetwork.cs
 using System.Collections.Generic;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
@@ -28,7 +29,7 @@ namespace SM.Net
         public override void OnStartClient()
         {
             base.OnStartClient();
-            Debug.Log($"[LobbyNetwork] Client start. IsServer={IsServer}");
+            Debug.Log($"[LobbyNetwork] Client start. IsServerInitialized={IsServerInitialized}");
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -47,16 +48,19 @@ namespace SM.Net
         [ServerRpc(RequireOwnership = false)]
         public void ForceStartServerRpc(string sceneName, int matchSeconds)
         {
-            SM.Net.SessionData.SelectedSceneName = sceneName;
-            SM.Net.SessionData.MatchSeconds = matchSeconds;
-
             Debug.Log($"[LobbyNetwork] ForceStart scene={sceneName} t={matchSeconds}s");
             selectedSceneName = sceneName;
 
+            // Persist chosen settings
+            SM.Net.SessionData.SelectedSceneName = sceneName;
+            SM.Net.SessionData.MatchSeconds = matchSeconds;
+
+            // Load gameplay scene for all clients.
             var sld = new SceneLoadData(sceneName) { ReplaceScenes = ReplaceOption.All };
             NetworkManager.SceneManager.LoadGlobalScenes(sld);
 
-            var steamLobby = FindObjectOfType<SteamLobbyManager>();
+            // Mark Steam lobby as "in_game" and block late joiners.
+            var steamLobby = UnityEngine.Object.FindFirstObjectByType<SteamLobbyManager>();
             if (steamLobby != null)
                 steamLobby.SetLobbyInGame(sceneName);
         }
