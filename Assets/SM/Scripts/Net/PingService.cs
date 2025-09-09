@@ -3,6 +3,7 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using UnityEngine;
 using Steamworks;
+using FishNet.Connection;
 
 namespace SM.Net
 {
