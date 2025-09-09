@@ -3,7 +3,7 @@ using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using UnityEngine;
 using Steamworks;
-using FishNet.Connection;
+using FishNet.Connection; // <- needed for NetworkConnection
 
 namespace SM.Net
 {
@@ -47,8 +47,19 @@ namespace SM.Net
         [ServerRpc(RequireOwnership = false)]
         private void PingServerRpc(int cid, double sentClientTime, string name, ulong sid)
         {
-            PongTargetRpc(Owner, cid, sentClientTime);
-            _names[cid] = name; _steamIds[cid] = sid;
+            // Look up the NetworkConnection for that clientId.
+            if (!base.NetworkManager.ServerManager.Clients.TryGetValue(cid, out NetworkConnection conn))
+            {
+                Debug.LogWarning($"[PingService] No connection for cid={cid}");
+                return;
+            }
+
+            // Bounce back to that specific client so it can compute RTT.
+            PongTargetRpc(conn, cid, sentClientTime);
+
+            // Store display info for scoreboard.
+            _names[cid] = name;
+            _steamIds[cid] = sid;
         }
 
         [TargetRpc]

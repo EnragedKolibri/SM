@@ -68,8 +68,16 @@ namespace SM.Net
         private void OnHostClicked()
         {
             int maxP = Mathf.Clamp(_maxPlayersField.value, 2, 10);
+            int idx = Mathf.Max(0, _mapDropdown.index);
             string sceneMeta = GetSelectedSceneName();
-            Debug.Log($"[MainMenuUI] Host clicked. max={maxP} map={sceneMeta}");
+            // NEW: stash selection for lobby/gameplay use.
+            SM.Net.SessionData.SelectedSceneName = sceneMeta;
+            if (mapCatalog != null && mapCatalog.Maps != null && idx < mapCatalog.Maps.Length)
+                SM.Net.SessionData.MatchSeconds = Mathf.Max(30, mapCatalog.Maps[idx].DefaultMatchSeconds); // guard minimum
+            else
+                SM.Net.SessionData.MatchSeconds = 180;
+
+            Debug.Log($"[MainMenuUI] Host clicked. max={maxP} map={sceneMeta} time={SM.Net.SessionData.MatchSeconds}s");
             lobbyManager.CreateLobby(maxP, sceneMeta);
         }
 

@@ -22,6 +22,9 @@ namespace SM.Net
         public override void OnStartServer()
         {
             base.OnStartServer();
+            // take matchSeconds from SessionData if present
+            matchSeconds = Mathf.Max(1, SM.Net.SessionData.MatchSeconds);
+            _timeLeft = matchSeconds;
             _timeLeft = matchSeconds;
             Debug.Log($"[GameFlowManager] Server match start {_timeLeft}s.");
             InvokeRepeating(nameof(ServerTickSecond), 1f, 1f);

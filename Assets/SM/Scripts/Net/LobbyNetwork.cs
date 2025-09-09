@@ -47,6 +47,9 @@ namespace SM.Net
         [ServerRpc(RequireOwnership = false)]
         public void ForceStartServerRpc(string sceneName, int matchSeconds)
         {
+            SM.Net.SessionData.SelectedSceneName = sceneName;
+            SM.Net.SessionData.MatchSeconds = matchSeconds;
+
             Debug.Log($"[LobbyNetwork] ForceStart scene={sceneName} t={matchSeconds}s");
             selectedSceneName = sceneName;
 

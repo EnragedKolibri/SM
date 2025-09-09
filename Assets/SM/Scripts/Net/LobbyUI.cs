@@ -73,11 +73,15 @@ namespace SM.Net
 
         private void ForceStart()
         {
-            // Get map from main menu selection stored in catalog index 0 as fallback.
-            int matchSec = defaultMatchSeconds;
-            string sceneName = ""; // host selected one in main menu; if unavailable, fallback
-            // Fallback: leave empty => server-side logic would need to interpret; for MVP, require catalog[0]
-            Debug.Log($"[LobbyUI] ForceStart scene='{sceneName}' t={matchSec}s (server will use provided scene).");
+            string sceneName = SM.Net.SessionData.SelectedSceneName;
+            int matchSec = SM.Net.SessionData.MatchSeconds;
+            if (string.IsNullOrEmpty(sceneName))
+            {
+                Debug.LogError("[LobbyUI] No SelectedSceneName set. Did Host choose a map on Main Menu?");
+                return;
+            }
+
+            Debug.Log($"[LobbyUI] ForceStart scene={sceneName} t={matchSec}s");
             lobbyNet.ForceStartServerRpc(sceneName, matchSec);
         }
 
